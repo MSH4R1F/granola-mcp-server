@@ -1,2 +1,2 @@
-# granola-mcp-server
+# Granola MCP Server
 Granola MCP Server
