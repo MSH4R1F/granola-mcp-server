@@ -6,11 +6,12 @@ list, get, search, export markdown, and basic stats.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from ..config import AppConfig
 from ..errors import BadRequestError, NotFoundError
 from ..parser import GranolaParser
+from ..sources.adapter import DocumentSourceAdapter
 from ..schemas import (
     ExportMarkdownInput,
     ExportMarkdownOutput,
@@ -73,11 +74,14 @@ def _to_meeting(item: Dict[str, object]) -> Meeting:
 
 
 def list_meetings(
-    config: AppConfig, parser: Optional[GranolaParser], params: ListMeetingsInput
+    config: AppConfig,
+    parser: Optional[Union[GranolaParser, DocumentSourceAdapter]],
+    params: ListMeetingsInput,
 ) -> ListMeetingsOutput:
     """List meetings with basic filtering and pagination."""
 
-    parser = parser or GranolaParser(config.cache_path)
+    if parser is None:
+        parser = GranolaParser(config.cache_path)
     raw_items = parser.get_meetings()
 
     # Filters
@@ -113,13 +117,16 @@ def list_meetings(
 
 
 def get_meeting(
-    config: AppConfig, parser: Optional[GranolaParser], params: GetMeetingInput
+    config: AppConfig,
+    parser: Optional[Union[GranolaParser, DocumentSourceAdapter]],
+    params: GetMeetingInput,
 ) -> GetMeetingOutput:
     """Get a full meeting by id."""
 
     if not params.id:
         raise BadRequestError("'id' is required")
-    parser = parser or GranolaParser(config.cache_path)
+    if parser is None:
+        parser = GranolaParser(config.cache_path)
     item = parser.get_meeting_by_id(params.id)
     if not item:
         raise NotFoundError("Meeting not found", {"id": params.id})
@@ -129,11 +136,14 @@ def get_meeting(
 
 
 def search_meetings(
-    config: AppConfig, parser: Optional[GranolaParser], params: SearchMeetingsInput
+    config: AppConfig,
+    parser: Optional[Union[GranolaParser, DocumentSourceAdapter]],
+    params: SearchMeetingsInput,
 ) -> SearchMeetingsOutput:
     """Linear search across titles, notes, participants (stdlib path)."""
 
-    parser = parser or GranolaParser(config.cache_path)
+    if parser is None:
+        parser = GranolaParser(config.cache_path)
     raw_items = parser.get_meetings()
 
     q = (params.q or "").lower()
@@ -179,13 +189,16 @@ def search_meetings(
 
 
 def export_markdown(
-    config: AppConfig, parser: Optional[GranolaParser], params: ExportMarkdownInput
+    config: AppConfig,
+    parser: Optional[Union[GranolaParser, DocumentSourceAdapter]],
+    params: ExportMarkdownInput,
 ) -> ExportMarkdownOutput:
     """Export meeting as Markdown with optional sections."""
 
     if not params.id:
         raise BadRequestError("'id' is required")
-    parser = parser or GranolaParser(config.cache_path)
+    if parser is None:
+        parser = GranolaParser(config.cache_path)
     item = parser.get_meeting_by_id(params.id)
     if not item:
         raise NotFoundError("Meeting not found", {"id": params.id})
@@ -195,11 +208,14 @@ def export_markdown(
 
 
 def meetings_stats(
-    config: AppConfig, parser: Optional[GranolaParser], params: StatsInput
+    config: AppConfig,
+    parser: Optional[Union[GranolaParser, DocumentSourceAdapter]],
+    params: StatsInput,
 ) -> StatsOutput:
     """Compute simple counts grouped by day or week over a time window."""
 
-    parser = parser or GranolaParser(config.cache_path)
+    if parser is None:
+        parser = GranolaParser(config.cache_path)
     items = parser.get_meetings()
 
     group_by = params.group_by or "day"

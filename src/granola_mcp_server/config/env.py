@@ -69,6 +69,36 @@ class AppConfig(BaseSettings):
         description="Forces stdlib-only mode; disables SQLite usage when True",
     )
 
+    # ---- document source configuration ----
+    document_source: str = Field(
+        default="remote",
+        description="Document source type: 'local' or 'remote'",
+    )
+    
+    # ---- remote API configuration ----
+    api_token: Optional[str] = Field(
+        default=None,
+        description="Bearer token for Granola API authentication (remote source)",
+    )
+    api_base: str = Field(
+        default="https://api.granola.ai",
+        description="Base URL for the Granola API",
+    )
+    
+    # ---- cache configuration ----
+    cache_enabled: bool = Field(
+        default=True,
+        description="Enable caching for remote document source",
+    )
+    cache_dir: Optional[Path] = Field(
+        default=None,
+        description="Directory for remote cache storage (default: ~/.granola/remote_cache)",
+    )
+    cache_ttl_seconds: int = Field(
+        default=86400,
+        description="Cache TTL in seconds (default: 24 hours)",
+    )
+    
     # ---- experimental hybrid (disabled by default) ----
     net_enabled: bool = Field(
         default=False,
@@ -99,7 +129,7 @@ class AppConfig(BaseSettings):
     )
 
     # ---- validators ----
-    @field_validator("cache_path", "db_path", "supabase_config", mode="before")
+    @field_validator("cache_path", "db_path", "supabase_config", "cache_dir", mode="before")
     @classmethod
     def _expand_all_paths(cls, v):
         return _expand_path(v)

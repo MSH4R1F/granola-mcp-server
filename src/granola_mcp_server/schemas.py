@@ -126,3 +126,16 @@ class CacheStatusOutput(BaseModel):
     size_bytes: int
     last_loaded_ts: Optional[str] = None
     profile: Literal["stdlib", "sqlite"]
+
+
+class RefreshCacheInput(BaseModel):
+    """Input parameters for cache refresh."""
+    pass
+
+
+class RefreshCacheOutput(BaseModel):
+    """Output from cache refresh operation."""
+    success: bool
+    message: str
+    meeting_count: int
+    cache_info: Dict[str, object]

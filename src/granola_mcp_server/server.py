@@ -23,68 +23,84 @@ from .schemas import (
     GetMeetingOutput,
     ListMeetingsInput,
     ListMeetingsOutput,
+    RefreshCacheInput,
+    RefreshCacheOutput,
     SearchMeetingsInput,
     SearchMeetingsOutput,
     StatsInput,
     StatsOutput,
 )
+from .sources import create_document_source
+from .sources.adapter import DocumentSourceAdapter
 from .tools import (
     cache_status,
     export_markdown,
     get_meeting,
     list_meetings,
     meetings_stats,
+    refresh_cache,
     search_meetings,
 )
 
 
-def _register_fastmcp_tools(app, config, parser):
+def _register_fastmcp_tools(app, config, adapter):
     # Namespace: granola.*
 
     @app.tool("granola.conversations.list")
     def meetings_list_conversations(params: ListMeetingsInput) -> ListMeetingsOutput:
-        return list_meetings(config, parser, params)
+        return list_meetings(config, adapter, params)
 
     @app.tool("granola.meetings.list")
     def meetings_list(params: ListMeetingsInput) -> ListMeetingsOutput:
-        return list_meetings(config, parser, params)
+        return list_meetings(config, adapter, params)
 
     @app.tool("granola.conversations.get")
     def meetings_get_conversations(params: GetMeetingInput) -> GetMeetingOutput:
-        return get_meeting(config, parser, params)
+        return get_meeting(config, adapter, params)
 
     @app.tool("granola.meetings.get")
     def meetings_get(params: GetMeetingInput) -> GetMeetingOutput:
-        return get_meeting(config, parser, params)
+        return get_meeting(config, adapter, params)
 
     @app.tool("granola.meetings.search")
     def meetings_search(params: SearchMeetingsInput) -> SearchMeetingsOutput:
-        return search_meetings(config, parser, params)
+        return search_meetings(config, adapter, params)
 
     @app.tool("granola.meetings.export_markdown")
     def meetings_export_md(params: ExportMarkdownInput) -> ExportMarkdownOutput:
-        return export_markdown(config, parser, params)
+        return export_markdown(config, adapter, params)
 
     @app.tool("granola.meetings.stats")
     def meetings_stats_tool(params: StatsInput) -> StatsOutput:
-        return meetings_stats(config, parser, params)
+        return meetings_stats(config, adapter, params)
 
     @app.tool("granola.cache.status")
     def cache_status_tool() -> CacheStatusOutput:
-        return cache_status(config, parser)
+        return cache_status(config, adapter)
+
+    @app.tool("granola.cache.refresh")
+    def cache_refresh_tool(params: RefreshCacheInput) -> RefreshCacheOutput:
+        return refresh_cache(config, adapter, params)
 
 
 def main(argv: Optional[list[str]] = None) -> None:
     """Run the FastMCP application.
 
-    This function loads configuration, creates a parser instance, and
-    registers all tools with the FastMCP runtime. It is safe to import
-    and call `main()` from other entrypoints.
+    This function loads configuration, creates a document source (local or remote),
+    wraps it in an adapter, and registers all tools with the FastMCP runtime.
+    It is safe to import and call `main()` from other entrypoints.
     """
 
     argv = argv if argv is not None else sys.argv[1:]
     config = load_config()
-    parser = GranolaParser(config.cache_path)
+    
+    # Create document source based on configuration
+    try:
+        source = create_document_source(config)
+        adapter = DocumentSourceAdapter(source)
+    except Exception as exc:
+        print(f"Error creating document source: {exc}", file=sys.stderr)
+        sys.exit(1)
 
     try:
         from fastmcp import FastMCP
@@ -94,7 +110,7 @@ def main(argv: Optional[list[str]] = None) -> None:
         ) from exc
 
     app = FastMCP("granola-mcp-server")
-    _register_fastmcp_tools(app, config, parser)
+    _register_fastmcp_tools(app, config, adapter)
 
     # Run the FastMCP app (serves until interrupted)
     app.run()

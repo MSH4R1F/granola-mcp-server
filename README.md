@@ -1,8 +1,18 @@
 # Granola MCP Server
 
-Local-first, read-only MCP server exposing Granola meetings via MCP tools.
+Read-only MCP server exposing Granola meetings via MCP tools. Supports both local file cache and remote API sources.
+
+## Features
+
+- ✅ **Local & Remote Sources**: Use local cache files or fetch directly from Granola API
+- ✅ **Web Deployment Ready**: Deploy to browsers, edge functions, or serverless platforms
+- ✅ **Intelligent Caching**: TTL-based caching with manual refresh support
+- ✅ **Automatic Retries**: Built-in retry logic with exponential backoff
+- ✅ **Zero Dependencies**: Stdlib-only core (optional FastMCP for MCP runtime)
 
 ## Quickstart
+
+### Local Mode (Default)
 
 1. Install (dev):
 
@@ -23,6 +33,82 @@ export GRANOLA_CACHE_PATH="~/Library/Application Support/Granola/cache-v3.json"
 export GRANOLA_STDLIB_ONLY=true
 export GRANOLA_USE_SQLITE=false
 ```
+
+### Remote Mode (Web Deployment)
+
+Get up and running with remote mode in under 5 minutes!
+
+#### Step 1: Get Your Token
+
+Visit [Granola settings](https://granola.ai/settings) and copy your API token.
+
+#### Step 2: Configure Environment
+
+Create a `.env` file in your project root:
+
+```bash
+# Enable remote mode
+GRANOLA_DOCUMENT_SOURCE=remote
+
+# Add your token
+GRANOLA_API_TOKEN=your_actual_token_here
+
+# Optional: customize cache (defaults shown)
+# GRANOLA_CACHE_TTL_SECONDS=86400  # 24 hours
+# GRANOLA_CACHE_DIR=~/.granola/remote_cache
+```
+
+Or export environment variables:
+
+```bash
+export GRANOLA_DOCUMENT_SOURCE=remote
+export GRANOLA_API_TOKEN=your_token_here
+```
+
+#### Step 3: Run the Server
+
+```bash
+granola-mcp
+```
+
+#### Verify It's Working
+
+**Using the Example Script:**
+```bash
+python examples/remote_source_example.py
+```
+
+**Using MCP Inspector:**
+```bash
+npx @modelcontextprotocol/inspector
+```
+Then test the `granola.meetings.list` tool.
+
+**Check Cache Status:**
+Use the `granola.cache.status` tool to verify remote mode is active.
+
+#### Common Configurations
+
+```bash
+# Remote mode with custom cache TTL (1 hour)
+export GRANOLA_DOCUMENT_SOURCE=remote
+export GRANOLA_API_TOKEN=your_token
+export GRANOLA_CACHE_TTL_SECONDS=3600
+granola-mcp
+```
+
+#### Troubleshooting
+
+**Error: "API token is required"**  
+→ Set the `GRANOLA_API_TOKEN` environment variable
+
+**Error: "Invalid or expired token"**  
+→ Get a fresh token from [Granola settings](https://granola.ai/settings)
+
+**Documents not updating**  
+→ Call the `granola.cache.refresh` tool or wait for cache TTL to expire
+
+📖 **See [REMOTE_SOURCE_GUIDE.md](REMOTE_SOURCE_GUIDE.md) for comprehensive documentation on deployment scenarios, security, and advanced configuration.**
 
 ## Testing with MCP Inspector
 
@@ -196,7 +282,7 @@ Get meeting statistics and analytics.
 **Returns:** Statistics including meeting counts by period and participant data
 
 ### granola.cache.status
-Get information about the local cache.
+Get information about the cache (local or remote).
 
 **Input Parameters:**
 ```json
@@ -204,6 +290,16 @@ Get information about the local cache.
 ```
 
 **Returns:** Cache information including path, size, last loaded timestamp, and profile type
+
+### granola.cache.refresh
+Manually refresh the cache, bypassing TTL (useful for remote mode).
+
+**Input Parameters:**
+```json
+{}
+```
+
+**Returns:** Refresh status, message, meeting count, and cache information
 
 ## Development
 

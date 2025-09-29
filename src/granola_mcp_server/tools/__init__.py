@@ -12,6 +12,7 @@ from .meetings import (
     meetings_stats,
     search_meetings,
 )
+from .refresh import refresh_cache
 from .status import cache_status
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "export_markdown",
     "meetings_stats",
     "cache_status",
+    "refresh_cache",
 ]
