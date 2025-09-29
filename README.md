@@ -1,28 +1,48 @@
 # Granola MCP Server
 
-Welcome to the Granola MCP Server – the AI-native backend for note-taking, research, and knowledge workflows.
-Granola is a lifesaver for someone that has back-to-back meetings and I just wanted to extend it to have it work with my current workflows and LLMs and give it the context to do the best it can.
+Local-first, read-only MCP server exposing Granola meetings via MCP tools.
 
+## Quickstart
 
-## What is MCP (Model Context Protocol)?
+1. Install (dev):
 
-MCP stands for Model Context Protocol. It’s a backend protocol for managing, syncing, and serving context to AI models. Think of it as the “glue” that lets your AI agents understand, retrieve, and update knowledge in real time. MCP is all about context: so now your AI assistant is always up-to-date and knows what you know from your meetings.
+```bash
+pip install -e .[dev,mcp]
+```
 
+2. Run server:
 
-## Getting Started
+```bash
+granola-mcp
+```
 
-1. Clone this repo.
-2. Install dependencies `pip install requirements.txt`
-3. Configure your workspace in `/config/granola.json`.
-4. Run `python main.py` to launch the MCP server.
+3. Environment vars (defaults shown):
 
+```bash
+export GRANOLA_CACHE_PATH="~/Library/Application Support/Granola/cache-v3.json"
+export GRANOLA_STDLIB_ONLY=true
+export GRANOLA_USE_SQLITE=false
+```
 
-## Contributing
+## Tools
 
-Open to PRs, feedback, and wild ideas. If I break somethign, my bad
+- granola.conversations.list / granola.meetings.list
+- granola.conversations.get / granola.meetings.get
+- granola.meetings.search
+- granola.meetings.export_markdown
+- granola.meetings.stats
+- granola.cache.status
 
+## Development
 
+Run tests:
 
----
+```bash
+pytest -q
+```
 
-Built by Mohamed Sharif, someone who just wants to learn everything
+Format:
+
+```bash
+black . && isort .
+```

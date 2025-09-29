@@ -1,7 +1,8 @@
+import os
+
+import dotenv
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
-import dotenv
-import os
 
 dotenv.load_dotenv()
 
@@ -10,15 +11,13 @@ MCP_PORT = os.getenv("MCP_PORT")
 
 
 mcp = FastMCP(
-    name = "Granola MCP Server",
-    host = MCP_HOST,
-    port = MCP_PORT,
-    stateless_http=True
+    name="Granola MCP Server", host=MCP_HOST, port=MCP_PORT, stateless_http=True
 )
 print(f"Granola MCP Server is running on {MCP_HOST}:{MCP_PORT}")
 
 
-@mcp.tool(title="Welcome a user",
+@mcp.tool(
+    title="Welcome a user",
     description="Return a friendly welcome message for the user.",
 )
 def welcome_user(name: str) -> str:
