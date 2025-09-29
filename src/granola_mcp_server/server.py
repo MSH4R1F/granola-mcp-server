@@ -42,11 +42,17 @@ def _register_fastmcp_tools(app, config, parser):
     # Namespace: granola.*
 
     @app.tool("granola.conversations.list")
+    def meetings_list_conversations(params: ListMeetingsInput) -> ListMeetingsOutput:
+        return list_meetings(config, parser, params)
+
     @app.tool("granola.meetings.list")
     def meetings_list(params: ListMeetingsInput) -> ListMeetingsOutput:
         return list_meetings(config, parser, params)
 
     @app.tool("granola.conversations.get")
+    def meetings_get_conversations(params: GetMeetingInput) -> GetMeetingOutput:
+        return get_meeting(config, parser, params)
+
     @app.tool("granola.meetings.get")
     def meetings_get(params: GetMeetingInput) -> GetMeetingOutput:
         return get_meeting(config, parser, params)
